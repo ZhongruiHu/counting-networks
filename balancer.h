@@ -3,21 +3,14 @@
 
 #include <stdint.h>
 
-typedef union balancer_bits {
-  struct {
-    uint8_t s : 1;
-    uint8_t l : 1;
-  } bits;
-  uint8_t raw;
-} balancer_bits_t;
-
 typedef union balancer_link_or_opaque {
   struct balancer *b;
   void *opaque;
 } balancer_link_or_opaque_t;
 
 struct balancer {
-  volatile balancer_bits_t d;
+  uint8_t l; // 1 if leaf, 0 otherwise
+  volatile unsigned int s;
   balancer_link_or_opaque_t links[2];
   struct balancer *next; // for LL threading
 };

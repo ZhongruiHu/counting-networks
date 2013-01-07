@@ -66,9 +66,9 @@ merger_alloc_and_init(unsigned int k)
     else
       n->bhead = b;
     n0->outputs[i]->links[n0->hilo[i]].b = b;
-    n0->outputs[i]->d.bits.l = 0;
+    n0->outputs[i]->l = 0;
     n1->outputs[i]->links[n1->hilo[i]].b = b;
-    n1->outputs[i]->d.bits.l = 0;
+    n1->outputs[i]->l = 0;
     n->outputs[2 * i] = n->outputs[2 * i + 1] = b;
     n->hilo[2 * i] = 0;
     n->hilo[2 * i + 1] = 1;
@@ -119,14 +119,14 @@ bitonic_alloc_and_init(unsigned int k)
     n->outputs[i] = n0->outputs[i];
     n->hilo[i] = n0->hilo[i];
     n1->outputs[i]->links[n1->hilo[i]].b = n0->inputs[i];
-    n1->outputs[i]->d.bits.l = 0;
+    n1->outputs[i]->l = 0;
   }
   for (i = 0; i < k / 2; i++) {
     n->inputs[i + (k / 2)] = n2->inputs[i];
     n->outputs[i + (k / 2)] = n0->outputs[i + (k / 2)];
     n->hilo[i + (k / 2)] = n0->hilo[i + (k / 2)];
     n2->outputs[i]->links[n2->hilo[i]].b = n0->inputs[i + (k / 2)];
-    n2->outputs[i]->d.bits.l = 0;
+    n2->outputs[i]->l = 0;
   }
 
   n->bhead = n0->bhead;
