@@ -5,6 +5,7 @@ balancer_init_leaf(struct balancer *b,
                    void *op_first,
                    void *op_second)
 {
+  b->d.raw = 0; // make valgrind happy
   b->d.bits.s = 0;
   b->d.bits.l = 1;
   b->links[0].opaque = op_first;
@@ -17,6 +18,7 @@ balancer_init_nonleaf(struct balancer *b,
                       struct balancer *first,
                       struct balancer *second)
 {
+  b->d.raw = 0; // make valgrind happy
   b->d.bits.s = 0;
   b->d.bits.l = 0;
   b->links[0].b = first;

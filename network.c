@@ -65,6 +65,7 @@ network_free(struct network *n)
   free(n->inputs);
   free(n->outputs);
   free(n->hilo);
+  free(n);
 }
 
 struct counting_network *
