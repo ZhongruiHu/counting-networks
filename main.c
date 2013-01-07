@@ -109,6 +109,7 @@ bitonic_worker(void *p)
 {
   struct counting_network *cn;
   cn = (struct counting_network *) p;
+  counting_network_assign_thread(cn);
   while (running)
     counting_network_next_value(cn);
   return 0;

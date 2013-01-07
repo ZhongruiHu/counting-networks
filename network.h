@@ -51,6 +51,10 @@ counting_network_alloc_and_init(unsigned int n);
 extern void
 counting_network_free(struct counting_network *cn);
 
+/** XXX: hacky */
+extern void
+counting_network_assign_thread(const struct counting_network *cn);
+
 extern uint64_t
 counting_network_next_value(struct counting_network *cn);
 

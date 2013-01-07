@@ -1,4 +1,5 @@
 #include <pthread.h>
+#include <stdbool.h>
 #include <stdlib.h>
 #include <string.h>
 
@@ -115,20 +116,20 @@ counting_network_free(struct counting_network *cn)
   free(cn);
 }
 
+static __thread unsigned int tl_idx = 0;
+
+void
+counting_network_assign_thread(const struct counting_network *cn)
+{
+  // XXX: not portable- pthread_t is supposed to be an opaque
+  // type. here we rely on it being an integer type.
+  tl_idx = pthread_self() % cn->n->size;
+}
+
 uint64_t
 counting_network_next_value(struct counting_network *cn)
 {
   struct counting_bucket *cb;
-  unsigned int idx;
-  uint64_t value;
-  // XXX: not portable- pthread_t is supposed to be an opaque
-  // type. here we rely on it being an integer type.
-  idx = pthread_self() % cn->n->size;
-  cb = (struct counting_bucket *) balancer_traverse(cn->n->inputs[idx]);
-  for (;;) {
-    value = cb->value;
-    if (!__sync_bool_compare_and_swap(&cb->value, value, value + cn->n->size))
-      continue;
-    return value;
-  }
+  cb = (struct counting_bucket *) balancer_traverse(cn->n->inputs[tl_idx]);
+  return __sync_fetch_and_add(&cb->value, cn->n->size);
 }
