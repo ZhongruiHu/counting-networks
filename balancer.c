@@ -34,7 +34,7 @@ balancer_traverse(struct balancer *b)
     if (!__sync_bool_compare_and_swap(&b->d.raw, vold.raw, vnew.raw))
       continue;
     if (vold.bits.l)
-      return b->links[vnew.bits.s].opaque;
-    b = b->links[vnew.bits.s].b;
+      return b->links[vold.bits.s].opaque;
+    b = b->links[vold.bits.s].b;
   }
 }

@@ -1,8 +1,8 @@
-HEADERS = balancer.h bitonic.h
-SRCFILES = balancer.c bitonic.c main.c
+HEADERS = balancer.h bitonic.h network.h
+SRCFILES = balancer.c bitonic.c main.c network.c
 OBJFILES = $(SRCFILES:.c=.o)
 
-CFLAGS = -Wall -g
+CFLAGS = -Wall -Werror -g -O2
 LDFLAGS = -lpthread
 
 all: network

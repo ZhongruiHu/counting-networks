@@ -1,67 +1,7 @@
+#include "balancer.h"
 #include "bitonic.h"
 
 #include <stdlib.h>
-
-struct network *
-network_alloc_and_init(unsigned int size)
-{
-  struct network *n;
-  n = (struct network *) malloc(sizeof(*n));
-  if (!n)
-    return 0;
-  n->size = size;
-  n->inputs = 0;
-  n->outputs = 0;
-  n->hilo = 0;
-  n->bhead = n->btail = 0;
-  n->inputs = (struct balancer **) malloc(sizeof(n->inputs[0]) * size);
-  if (!n->inputs)
-    goto free_n;
-  n->outputs = (struct balancer **) malloc(sizeof(n->outputs[0]) * size);
-  if (!n->outputs)
-    goto free_n;
-  n->hilo = (uint8_t *) malloc(sizeof(n->hilo[0]) * size);
-  if (!n->hilo)
-    goto free_n;
-  return n;
-free_n:
-  if (n->inputs)
-    free(n->inputs);
-  if (n->outputs)
-    free(n->outputs);
-  if (n->hilo)
-    free(n->hilo);
-  return 0;
-}
-
-void
-network_clear(struct network *n)
-{
-  unsigned int i;
-  for (i = 0; i < n->size; i++) {
-    n->inputs[i] = 0;
-    n->outputs[i] = 0;
-    n->hilo[i] = 0;
-  }
-  n->bhead = n->btail = 0;
-}
-
-void
-network_free(struct network *n)
-{
-  if (!n)
-    return;
-  struct balancer *b, *b0;
-  b = n->bhead;
-  while (b) {
-    b0 = b->next;
-    free(b);
-    b = b0;
-  }
-  free(n->inputs);
-  free(n->outputs);
-  free(n->hilo);
-}
 
 struct network *
 merger_alloc_and_init(unsigned int k)
@@ -78,7 +18,7 @@ merger_alloc_and_init(unsigned int k)
     b = (struct balancer *) malloc(sizeof(*b));
     if (!b)
       goto free_n;
-    b->next = 0;
+    balancer_init_leaf(b, 0, 0);
     n->bhead = n->btail = b;
     n->inputs[0] = n->inputs[1] = b;
     n->outputs[0] = n->outputs[1] = b;
@@ -109,22 +49,27 @@ merger_alloc_and_init(unsigned int k)
   for (i = 0; i < k / 2; i += 2)
     n->inputs[i] = n0->inputs[i / 2];
   for (i = 1; i < k / 2; i += 2)
-    n->inputs[k + i] = n0->inputs[(k / 4) + (i / 2)];
+    n->inputs[(k / 2) + i] = n0->inputs[(k / 4) + (i / 2)];
   for (i = 1; i < k / 2; i += 2)
     n->inputs[i] = n1->inputs[i / 2];
   for (i = 0; i < k / 2; i += 2)
-    n->inputs[k + i] = n1->inputs[(k / 4) + (i / 2)];
+    n->inputs[(k / 2) + i] = n1->inputs[(k / 4) + (i / 2)];
 
   for (i = 0; i < k / 2; i++) {
     b = (struct balancer *) malloc(sizeof(*b));
     if (!b)
       goto free_n;
+    balancer_init_leaf(b, 0, 0);
     b->next = n->bhead;
-    n->bhead = b;
+    if (!n->btail)
+      n->bhead = n->btail = b;
+    else
+      n->bhead = b;
     n0->outputs[i]->links[n0->hilo[i]].b = b;
     n0->outputs[i]->d.bits.l = 0;
     n1->outputs[i]->links[n1->hilo[i]].b = b;
     n1->outputs[i]->d.bits.l = 0;
+    n->outputs[2 * i] = n->outputs[2 * i + 1] = b;
     n->hilo[2 * i] = 0;
     n->hilo[2 * i + 1] = 1;
   }
@@ -184,8 +129,8 @@ bitonic_alloc_and_init(unsigned int k)
     n2->outputs[i]->d.bits.l = 0;
   }
 
-  n0->btail->next = n->bhead;
   n->bhead = n0->bhead;
+  n->btail = n0->btail;
   n1->btail->next = n->bhead;
   n->bhead = n1->bhead;
   n2->btail->next = n->bhead;

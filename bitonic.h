@@ -6,36 +6,7 @@
  * Herlihy, and Shavit 93.
  */
 
-#include "balancer.h"
-
-struct network {
-  unsigned int size;
-  struct balancer **inputs;
-  struct balancer **outputs;
-  uint8_t *hilo;
-  struct balancer *bhead; // a LL of balancers in this network
-  struct balancer *btail;
-};
-
-/**
- * Allocate a network of n inputs and n outputs, with all balancer
- * pointers initialized to 0
- *
- * Precondition: n >= 1
- */
-extern struct network *
-network_alloc_and_init(unsigned int n);
-
-extern void
-network_clear(struct network *n);
-
-/**
- * Frees all memory associated with the network, including
- * the network structure itself and the all the balancers.
- * Does not free opaque pointers for the leaves.
- */
-extern void
-network_free(struct network *n);
+#include "network.h"
 
 /**
  * Allocate memory for and create a merger[k] network.
