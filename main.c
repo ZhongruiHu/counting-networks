@@ -6,11 +6,12 @@
 #include <stdint.h>
 #include <stdlib.h>
 #include <strings.h>
+#include <sys/time.h>
 #include <unistd.h>
 
 #include "network.h"
 
-#define NSECSTEST 1
+#define NSECSTEST 10
 
 static unsigned int bitonic_n;
 static unsigned int num_threads;
@@ -18,24 +19,37 @@ static unsigned int num_threads;
 static volatile uint64_t value;
 static volatile bool running;
 
+static int verbose;
+
+static inline uint64_t
+tv_usec(const struct timeval *tv)
+{
+  return ((uint64_t)tv->tv_sec) * 1000000 + tv->tv_usec;
+}
+
 /**
  * returns the number of seconds the test executed for
  */
 static double
 run_test(void *(*runner)(void *), void *p)
 {
+  struct timeval tvbegin, tvend;
   pthread_t *workers;
   unsigned int i;
+  double s;
   workers = (pthread_t *) malloc(sizeof(workers[0]) * num_threads);
   running = true;
+  gettimeofday(&tvbegin, 0);
   for (i = 0; i < num_threads; i++)
     pthread_create(&workers[i], NULL, runner, p);
   sleep(NSECSTEST);
   running = false;
   for (i = 0; i < num_threads; i++)
     pthread_join(workers[i], NULL);
+  gettimeofday(&tvend, 0);
+  s = ((double)(tv_usec(&tvend) - tv_usec(&tvbegin)))/1000000.0;
   free(workers);
-  return (double) NSECSTEST;
+  return s;
 }
 
 static void
@@ -43,6 +57,8 @@ report_results(uint64_t nincrs, double seconds)
 {
   double r;
   r = ((double) nincrs)/seconds;
+  if (verbose)
+    fprintf(stderr, "Test ran for: %.3f seconds\n", seconds);
   printf("%f\n", r);
 }
 
@@ -115,11 +131,13 @@ main(int argc, char **argv)
   int c;
   void (*runner)(void);
   runner = 0;
+  verbose = 0;
   for (;;) {
     static struct option long_options[] =
     {
-      {"counter",      required_argument, 0, 'c'},
-      {"num-threads",  required_argument, 0, 'n'},
+      {"verbose",      no_argument,       &verbose, 1  },
+      {"counter",      required_argument, 0,        'c'},
+      {"num-threads",  required_argument, 0,        'n'},
       {0, 0, 0, 0}
     };
     int option_index = 0;
@@ -127,14 +145,24 @@ main(int argc, char **argv)
     if (c == -1)
       break;
     switch (c) {
+    case 0:
+      if (long_options[option_index].flag != 0)
+        break;
+      abort();
     case 'c':
-      if (!strcasecmp("spinlock", optarg))
+      if (!strcasecmp("spinlock", optarg)) {
+        if (verbose)
+          fprintf(stderr, "counter: %s\n", optarg);
         runner = spinlock_runner;
-      else if (!strcasecmp("cas", optarg))
+      } else if (!strcasecmp("cas", optarg)) {
+        if (verbose)
+          fprintf(stderr, "counter: %s\n", optarg);
         runner = cas_runner;
-      else if (!strncasecmp("bitonic:", optarg, 8)) {
+      } else if (!strncasecmp("bitonic:", optarg, 8)) {
         bitonic_n = strtol(optarg + 8, NULL, 10);
         assert(bitonic_n >= 2);
+        if (verbose)
+          fprintf(stderr, "counter: %s\n", optarg);
         // XXX: check bitonic_n is a power of 2 >= 2
         runner = bitonic_runner;
       } else {
@@ -149,6 +177,8 @@ main(int argc, char **argv)
         fprintf(stderr, "Error: num_threads must be > 0\n");
         return 1;
       }
+      if (verbose)
+        fprintf(stderr, "num_threads: %d\n", num_threads);
       break;
 
     case '?':
