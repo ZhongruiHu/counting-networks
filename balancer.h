@@ -35,6 +35,16 @@ extern void balancer_init_nonleaf(struct balancer *b,
  * returning the opaque pointer reached after traversing
  * the last leaf node
  */
-extern void *balancer_traverse(struct balancer *b);
+extern inline void *
+balancer_traverse(struct balancer *b)
+{
+  unsigned int s;
+  for (;;) {
+    s = __sync_fetch_and_add(&b->s, 1);
+    if (b->l)
+      return b->links[s % 2].opaque;
+    b = b->links[s % 2].b;
+  }
+}
 
 #endif /* _BALANCER_H_ */

@@ -23,15 +23,3 @@ balancer_init_nonleaf(struct balancer *b,
   b->links[1].b = second;
   b->next = 0;
 }
-
-void *
-balancer_traverse(struct balancer *b)
-{
-  unsigned int s;
-  for (;;) {
-    s = __sync_fetch_and_add(&b->s, 1);
-    if (b->l)
-      return b->links[s % 2].opaque;
-    b = b->links[s % 2].b;
-  }
-}
