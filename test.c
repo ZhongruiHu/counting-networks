@@ -21,7 +21,7 @@ main(int argc, char **argv)
   struct counting_network *cn;
   unsigned int i, p;
   p = 2;
-  for (i = 0; i < 6; i++, p *= 2) {
+  for (i = 0; i < 8; i++, p *= 2) {
     cn = counting_network_alloc_and_init(p);
     printf("testing bitonic[%d]...", p);
     test_cn(cn);

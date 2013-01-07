@@ -32,7 +32,7 @@ balancer_traverse(struct balancer *b)
   for (;;) {
     balancer_bits_t vold = b->d;
     balancer_bits_t vnew = vold;
-    vnew.bits.s = vold.bits.s ? 0 : 1;
+    vnew.bits.s = (vold.bits.s + 1) % 2;
     if (!__sync_bool_compare_and_swap(&b->d.raw, vold.raw, vnew.raw))
       continue;
     if (vold.bits.l)
