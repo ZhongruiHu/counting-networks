@@ -2,7 +2,7 @@ HEADERS = balancer.h bitonic.h network.h
 SRCFILES = balancer.c bitonic.c network.c
 OBJFILES = $(SRCFILES:.c=.o)
 
-CFLAGS = -Wall -Werror -g -O2
+CFLAGS = -Wall -Werror -g -O3
 LDFLAGS = -lpthread
 
 all: network
