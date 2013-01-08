@@ -116,14 +116,13 @@ counting_network_free(struct counting_network *cn)
   free(cn);
 }
 
+static volatile unsigned int g_counter = 0;
 static __thread unsigned int tl_idx = 0;
 
 void
 counting_network_assign_thread(const struct counting_network *cn)
 {
-  // XXX: not portable- pthread_t is supposed to be an opaque
-  // type. here we rely on it being an integer type.
-  tl_idx = pthread_self() % cn->n->size;
+  tl_idx = __sync_fetch_and_add(&g_counter, 1) % cn->n->size;
 }
 
 uint64_t

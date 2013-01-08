@@ -1,4 +1,4 @@
-HEADERS = balancer.h bitonic.h network.h
+HEADERS = balancer.h bitonic.h macros.h network.h
 SRCFILES = balancer.c bitonic.c network.c
 OBJFILES = $(SRCFILES:.c=.o)
 

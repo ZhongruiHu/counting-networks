@@ -10,14 +10,15 @@
 #include <unistd.h>
 
 #include "network.h"
+#include "macros.h"
 
 #define NSECSTEST 10
 
 static unsigned int bitonic_n;
 static unsigned int num_threads;
 
-static volatile uint64_t value;
-static volatile bool running;
+static volatile uint64_t value CACHE_ALIGNED;
+static volatile bool running CACHE_ALIGNED;
 
 static int verbose;
 

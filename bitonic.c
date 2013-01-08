@@ -1,7 +1,9 @@
+#include <malloc.h>
+#include <stdlib.h>
+
 #include "balancer.h"
 #include "bitonic.h"
-
-#include <stdlib.h>
+#include "macros.h"
 
 struct network *
 merger_alloc_and_init(unsigned int k)
@@ -15,6 +17,7 @@ merger_alloc_and_init(unsigned int k)
     return 0;
   if (k == 2) {
     // merger[2] is defined as single balancer
+    //b = (struct balancer *) memalign(CACHELINE_SIZE, sizeof(*b));
     b = (struct balancer *) malloc(sizeof(*b));
     if (!b)
       goto free_n;
@@ -56,6 +59,7 @@ merger_alloc_and_init(unsigned int k)
     n->inputs[(k / 2) + i] = n1->inputs[(k / 4) + (i / 2)];
 
   for (i = 0; i < k / 2; i++) {
+    //b = (struct balancer *) memalign(CACHELINE_SIZE, sizeof(*b));
     b = (struct balancer *) malloc(sizeof(*b));
     if (!b)
       goto free_n;

@@ -2,6 +2,7 @@
 #define _NETWORK_H_
 
 #include <stdint.h>
+#include "macros.h"
 
 struct network {
   unsigned int size;
@@ -34,6 +35,7 @@ network_free(struct network *n);
 
 struct counting_bucket {
   volatile uint64_t value;
+  uint8_t _pad[CACHELINE_SIZE - sizeof(uint64_t)];
 };
 
 struct counting_network {

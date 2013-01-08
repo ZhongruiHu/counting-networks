@@ -2,6 +2,7 @@
 #define _BALANCER_H_
 
 #include <stdint.h>
+#include "macros.h"
 
 typedef union balancer_link_or_opaque {
   struct balancer *b;
@@ -9,8 +10,10 @@ typedef union balancer_link_or_opaque {
 } balancer_link_or_opaque_t;
 
 struct balancer {
-  uint8_t l; // 1 if leaf, 0 otherwise
   volatile unsigned int s;
+  uint8_t _pad[CACHELINE_SIZE - sizeof(unsigned int)];
+
+  uint8_t l; // 1 if leaf, 0 otherwise
   balancer_link_or_opaque_t links[2];
   struct balancer *next; // for LL threading
 };
